@@ -1,0 +1,25 @@
+name: 'HealthyPunch'
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '50 3 * * *'
+jobs:
+  lottery:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout codes'
+        uses: actions/checkout@v2
+      - name: 'Use Node.js'
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12.18.3'
+      - name: 'Run in Nodejs'
+        shell: bash
+        env:
+          USERNAME: ${{ secrets.USERNAME }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+          SCKEY: ${{ secrets.SCKEY }}
+        run:
+          node HealthyPunch.js
