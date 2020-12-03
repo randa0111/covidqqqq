@@ -6,7 +6,7 @@ on:
   schedule:
     - cron: '50 21 * * *'
 jobs:
-  lottery:
+  Start:
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout codes'
