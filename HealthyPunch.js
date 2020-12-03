@@ -263,16 +263,16 @@ const API = {
     await API.initSignIn();
     console.log('开始自动登录');
     desp += '开始自动登录\n\n';
-    console.log(`成功获取到Cookie:\n${Cookie.replace('.*','*')}`);
-    desp += `成功获取到Cookie:\n${Cookie.replace('.*','*')}\n\n`
+    console.log(`成功获取到Cookie:\n${Cookie.replace(/.*/,'*')}`);
+    desp += `成功获取到Cookie:\n${Cookie.replace(/.*/,'*')}\n\n`
     const [err0, link] = await to(API.getLink());
     if (err0) {
         console.log(err0);
         API.sendToMe('健康打卡错误通知',err0)
         return;
     }
-    console.log(`获取到跳转链接:\n${link}`);
-    desp += `获取到跳转链接:\n${link}\n\n`
+    console.log(`获取到跳转链接:\n${link.replace(/.*/,'*')}`);
+    desp += `获取到跳转链接:\n${link.replace(/.*/,'*')}\n\n`
     await API.setAuthorization(link);
     const [err1, baseinfo] = await to(API.getBaseInfo());
     if (err1) {
