@@ -26,7 +26,7 @@ const API = {
      * @returns {Promise<void>}
      */
     initSignIn() {
-        return new Promise((resolve, rejects) => {
+        return new Promise((resolve, reject) => {
             HttpRequest({
                 type: 'GET',
                 _url: LOGIN_PAGE,
@@ -43,13 +43,13 @@ const API = {
                     });
                     Cookie += _Cookie.join('; ');
                     const token = /(?<=token\s*=\s*")\S*(?=")/.exec(chunk.body);
-                    if(token === null) rejects();
+                    if(token === null) reject();
                     __token__ = token[0];
                     resolve()
                 },
                 error: err => {
                     console.log(err);
-                    rejects('未初始化成功');
+                    reject('未初始化成功');
                 }
             })
         })
@@ -59,7 +59,7 @@ const API = {
      * @returns {Promise<string>}
      */
     getLink() {
-        return new Promise((resolve) => {
+        return new Promise((resolve,reject) => {
             HttpRequest({
                 type: 'POST',
                 _url: LOGIN_PAGE,
