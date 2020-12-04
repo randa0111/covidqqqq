@@ -294,6 +294,7 @@ const fn = {
         })
         .then(data => {
             desp += md('获取基本信息成功');
+            desp += md(data.msg);
             return fn.filterSendInfo(data);
         })
         .then(data => {
