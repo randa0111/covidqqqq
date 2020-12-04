@@ -1,5 +1,4 @@
 const { readFile } = require('fs');
-const { to } = require('./node/BaseTool');
 const { HttpRequest } = require('./node/HttpRequest');
 
 const { USERNAME, PASSWORD, SCKEY } = process.env;
