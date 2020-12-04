@@ -2,19 +2,17 @@ const { readFile } = require('fs');
 const { to } = require('./node/BaseTool');
 const { HttpRequest } = require('./node/HttpRequest');
 
-const [username, password,SCKEY] = [
-    process.env.USERNAME,
-    process.env.PASSWORD,
-    process.env.SCKEY,
-];
-let __token__ = '';
-let Cookie = 'languageIndex=0; ';
-let authorization = 'Bearer ';
+const { USERNAME, PASSWORD, SCKEY } = process.env;
+/* 身份验证信息 */
+let Cookie = 'languageIndex=0; ',
+    __token__ = '',
+    authorization = 'Bearer ';
+/* 请求头 */
 const
     YQFK_HOST = 'https://yqfk.dgut.edu.cn',
     CAS_HOST = 'https://cas.dgut.edu.cn',
     LOGIN_PAGE = CAS_HOST + '/home/Oauth/getToken/appid/illnessProtectionHome/state/home.html',
-    RequestHeaders = {
+    Headers = {
         CHROME: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36',
         HTML: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
         JSON: 'application/json;charset=utf-8',
@@ -23,7 +21,7 @@ const
 const API = {
     /**
      * 初始化登录信息
-     * @returns {Promise<void>}
+     * @returns {Promise<string>}
      */
     initSignIn() {
         return new Promise((resolve, reject) => {
@@ -32,8 +30,8 @@ const API = {
                 _url: LOGIN_PAGE,
                 headers: {
                     Referer: YQFK_HOST,
-                    'User-Agent': RequestHeaders.CHROME,
-                    Accept: RequestHeaders.HTML,
+                    'User-Agent': Headers.CHROME,
+                    Accept: Headers.HTML,
                 },
                 success: chunk => {
                     const _Cookies = chunk.header['set-cookie'];
@@ -45,7 +43,7 @@ const API = {
                     const token = /(?<=token\s*=\s*")\S*(?=")/.exec(chunk.body);
                     if(token === null) reject();
                     __token__ = token[0];
-                    resolve()
+                    resolve('初始化成功')
                 },
                 error: err => {
                     console.log(err);
@@ -56,9 +54,11 @@ const API = {
     },
     /**
      * 成功登录跳转链接
+     * @param {string} username
+     * @param {string} password
      * @returns {Promise<string>}
      */
-    getLink() {
+    getLink(username,password) {
         return new Promise((resolve,reject) => {
             HttpRequest({
                 type: 'POST',
@@ -70,11 +70,11 @@ const API = {
                     wechat_verify: ''
                 },
                 headers: {
-                    'User-Agent': RequestHeaders.CHROME,
+                    'User-Agent': Headers.CHROME,
                     Referer: LOGIN_PAGE,
                     Origin: CAS_HOST,
-                    Accept: RequestHeaders.JSON,
-                    'Content-Type': RequestHeaders.URL_ENCODE,
+                    Accept: Headers.JSON,
+                    'Content-Type': Headers.URL_ENCODE,
                     Cookie,
                 },
                 success: chunk => {
@@ -95,7 +95,7 @@ const API = {
     /**
      * 设置授权信息
      * @param {string} link
-     * @returns {Promise<void>}
+     * @returns {Promise<string>}
      */
     setAuthorization(link) {
         return new Promise((resolve, reject) => {
@@ -103,9 +103,9 @@ const API = {
                 type: 'GET',
                 _url: link,
                 headers: {
-                    'User-Agent': RequestHeaders.CHROME,
+                    'User-Agent': Headers.CHROME,
                     Referer: CAS_HOST,
-                    Accept: RequestHeaders.HTML,
+                    Accept: Headers.HTML,
                 },
                 success: chunk => {
                     const location = chunk.header['location'];
@@ -114,7 +114,7 @@ const API = {
                         reject('未获取到access_token')
                     } else {
                         authorization += access_token[0];
-                        resolve()
+                        resolve(`成功获取到access_token`)
                     }
                 },
                 error: err => {
@@ -135,8 +135,8 @@ const API = {
                 _url: YQFK_HOST+'/home/base_info/getBaseInfo',
                 headers: {
                     Referer: YQFK_HOST+'/main',
-                    'User-Agent': RequestHeaders.CHROME,
-                    Accept: RequestHeaders.JSON,
+                    'User-Agent': Headers.CHROME,
+                    Accept: Headers.JSON,
                     Cookie,
                     authorization,
                 },
@@ -158,36 +158,6 @@ const API = {
         });
     },
     /**
-     * 获取要发送的信息
-     * @param {JSON} baseinfo
-     * @returns {Promise<{}>}
-     */
-    filterSendInfo(baseinfo) {
-        return new Promise((resolve, reject) => {
-            readFile('send.json',(err,data) => {
-                if (err) {
-                    console.log(err);
-                    reject('打开文件失败')
-                } else {
-                    let sendinfo = {};
-                    const send = JSON.parse(data)
-                        , keys = Object.keys(send);
-                    keys.forEach(key => {
-                        const value = baseinfo[key];
-                        if (typeof value === 'undefined') {
-                            sendinfo[key] = send[key];
-                        } else if(value instanceof Array && value.length === 0){
-                            sendinfo[key] = null;
-                        } else {
-                            sendinfo[key] = send[key];
-                        }
-                    });
-                    resolve(sendinfo)
-                }
-            })
-        });
-    },
-    /**
      * 提交信息
      * @param {{[key: string]: any}} info
      * @returns {Promise<void>}
@@ -201,9 +171,9 @@ const API = {
                 headers: {
                     Referer: YQFK_HOST+'/main',
                     Origin: YQFK_HOST,
-                    'User-Agent': RequestHeaders.CHROME,
-                    Accept: RequestHeaders.JSON,
-                    'Content-Type': RequestHeaders.JSON,
+                    'User-Agent': Headers.CHROME,
+                    Accept: Headers.JSON,
+                    'Content-Type': Headers.JSON,
                     Cookie,
                     authorization,
                 },
@@ -239,8 +209,8 @@ const API = {
                     desp
                 },
                 headers: {
-                    'User-Agent': RequestHeaders.CHROME,
-                    Accept: RequestHeaders.JSON,
+                    'User-Agent': Headers.CHROME,
+                    Accept: Headers.JSON,
                 },
                 success: chunk => {
                     const res = JSON.parse(chunk.body);
@@ -258,50 +228,90 @@ const API = {
         });
     }
 };
-(async () => {
+const fn = {
+    /**
+     * 获取要发送的信息
+     * @param {JSON} baseinfo
+     * @returns {Promise<{}>}
+     */
+    filterSendInfo(baseinfo) {
+        return new Promise((resolve, reject) => {
+            readFile('send.json',(err,data) => {
+                if (err) {
+                    console.log(err);
+                    reject('打开文件失败');
+                } else {
+                    let sendinfo = {};
+                    const send = JSON.parse(data)
+                        , keys = Object.keys(send);
+                    keys.forEach(key => {
+                        const value = baseinfo[key];
+                        if (typeof value === 'undefined') {
+                            if (key === "confirm") {
+                                sendinfo[key] = 1;
+                            } else {
+                                reject(`缺少键${key}`);
+                                return;
+                            }
+                        } else if(value instanceof Array && value.length === 0){
+                            sendinfo[key] = null;
+                        } else {
+                            sendinfo[key] = value;
+                        }
+                    });
+                    resolve(sendinfo)
+                }
+            })
+        });
+    },
+    /**
+     * 转换为Server酱所需正文格式
+     * @param {string} text
+     * @returns {string}
+     */
+    toMarkDown(text) {
+        console.log(text);
+        return text+'\n\n'
+    }
+};
+(() => {
     let desp = '';
-    await API.initSignIn();
-    console.log('开始自动登录');
-    desp += '开始自动登录\n\n';
-    console.log(`成功获取到Cookie:\n${Cookie.replace(/.*/,'*')}`);
-    desp += `成功获取到Cookie:\n${Cookie.replace(/.*/,'*')}\n\n`
-    const [err0, link] = await to(API.getLink());
-    if (err0) {
-        console.log(err0);
-        API.sendToMe('健康打卡错误通知',err0)
-        return;
-    }
-    console.log(`获取到跳转链接:\n${link.replace(/.*/,'*')}`);
-    desp += `获取到跳转链接:\n${link.replace(/.*/,'*')}\n\n`
-    await API.setAuthorization(link);
-    const [err1, baseinfo] = await to(API.getBaseInfo());
-    if (err1) {
-        console.log(err1);
-        API.sendToMe('健康打卡错误通知',err1)
-        return;
-    }
-    const [err2, sendinfo] = await to(API.filterSendInfo(baseinfo));
-    if (err2) {
-        console.log(err2);
-        API.sendToMe('健康打卡错误通知',err2)
-        return;
-    }
-    console.log('筛选基本信息');
-    desp += '筛选基本信息\n\n';
-    console.log('提交健康日报表');
-    desp += '提交健康日报表\n\n'
-    const [err3, msg0] = await to(API.submit(sendinfo));
-    if (err3) {
-        console.log(err3);
-        API.sendToMe('健康打卡错误通知',err3)
-        return;
-    }
-    console.log(msg0);
-    desp += msg0+'\n\n';
-    const [err4, msg1] = await to(API.sendToMe('健康打卡通知',desp))
-    if (err4) {
-        console.log(err4);
-        return;
-    }
-    console.log(msg1);
+    const md = fn.toMarkDown;
+    desp += md('开始自动登录');
+    API.initSignIn()
+        .then(data => {
+            desp += md(data);
+            desp += md(`成功获取到Cookie:\n\n${Cookie.replace(/./g,'*')}`);
+            desp += md(`成功获取到token:\n\n${__token__.replace(/./g,'*')}`);
+            return API.getLink(USERNAME, PASSWORD);
+        })
+        .then(data => {
+            desp += md('登陆成功');
+            desp += md(`成功获取到跳转链接:\n\n${data.replace(/./g,'*')}`);
+            return API.setAuthorization(data);
+        })
+        .then(data => {
+            desp += md(data);
+            desp += md('设置授权头');
+            return API.getBaseInfo();
+        })
+        .then(data => {
+            desp += md('获取基本信息成功');
+            return fn.filterSendInfo(data);
+        })
+        .then(data => {
+            desp += md('要发送的信息筛选完毕');
+            desp += md('提交健康日报表');
+            return API.submit(data);
+        })
+        .then(data => {
+            desp += md(data)
+        })
+        .catch(err => {
+            desp += fn.toMarkDown(err)
+            API.sendToMe('健康打卡出错',desp);
+        })
+        .finally(()=>{
+            API.sendToMe('健康打卡通知',desp);
+        })
 })()
