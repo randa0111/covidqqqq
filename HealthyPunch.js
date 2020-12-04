@@ -242,7 +242,7 @@ const fn = {
                     reject('打开文件失败');
                 } else {
                     let sendinfo = {};
-                    const keys = JSON.parse(data);
+                    const { keys } = JSON.parse(data);
                     keys.forEach(key => {
                         const value = baseinfo[key];
                         if (typeof value === 'undefined') {
