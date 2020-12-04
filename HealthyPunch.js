@@ -182,8 +182,7 @@ const API = {
                     if (res.code === 200) {
                         resolve(res.message)
                     } else {
-                        console.log(res.message);
-                        reject('提交失败')
+                        reject(res.message)
                     }
                 },
                 error: err => {
@@ -280,13 +279,13 @@ const fn = {
     API.initSignIn()
         .then(data => {
             desp += md(data);
-            desp += md(`成功获取到Cookie:\n\n${Cookie.replace(/./g,'\*')}`);
-            desp += md(`成功获取到token:\n\n${__token__.replace(/./g,'\*')}`);
+            desp += md(`成功获取到Cookie:\n\n\`${Cookie.replace(/./g,'*')}\``);
+            desp += md(`成功获取到token:\n\n\`${__token__.replace(/./g,'*')}\``);
             return API.getLink(USERNAME, PASSWORD);
         })
         .then(data => {
             desp += md('登陆成功');
-            desp += md(`成功获取到跳转链接:\n\n${data.replace(/./g,'\*')}`);
+            desp += md(`成功获取到跳转链接:\n\n\`${data.replace(/./g,'*')}\``);
             return API.setAuthorization(data);
         })
         .then(data => {
