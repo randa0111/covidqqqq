@@ -40,13 +40,12 @@ const API = {
                     });
                     Cookie += _Cookie.join('; ');
                     const token = /(?<=token\s*=\s*")\S*(?=")/.exec(chunk.body);
-                    if(token === null) reject();
+                    if (token === null) reject();
                     __token__ = token[0];
                     resolve('初始化成功')
                 },
                 error: err => {
-                    console.log(err);
-                    reject('未初始化成功');
+                    reject(`未初始化成功\n\n${err}`);
                 }
             })
         })
@@ -57,8 +56,8 @@ const API = {
      * @param {string} password
      * @returns {Promise<string>}
      */
-    getLink(username,password) {
-        return new Promise((resolve,reject) => {
+    getLink(username, password) {
+        return new Promise((resolve, reject) => {
             HttpRequest({
                 type: 'POST',
                 _url: LOGIN_PAGE,
@@ -85,8 +84,7 @@ const API = {
                     }
                 },
                 error: err => {
-                    console.log(err);
-                    reject('未登陆成功')
+                    reject(`未登陆成功\n\n${err}`)
                 }
             })
         });
@@ -117,8 +115,7 @@ const API = {
                     }
                 },
                 error: err => {
-                    console.log(err);
-                    reject('未获取到access_token')
+                    reject(`未获取到access_token\n\n${err}`)
                 }
             })
         });
@@ -131,9 +128,9 @@ const API = {
         return new Promise((resolve, reject) => {
             HttpRequest({
                 type: 'GET',
-                _url: YQFK_HOST+'/home/base_info/getBaseInfo',
+                _url: YQFK_HOST + '/home/base_info/getBaseInfo',
                 headers: {
-                    Referer: YQFK_HOST+'/main',
+                    Referer: YQFK_HOST + '/main',
                     'User-Agent': Headers.CHROME,
                     Accept: Headers.JSON,
                     Cookie,
@@ -142,16 +139,13 @@ const API = {
                 success: chunk => {
                     const res = JSON.parse(chunk.body);
                     if (res.code === 200) {
-                        console.log(res.message);
                         resolve(res.info);
                     } else {
-                        console.log(res);
-                        reject('获取基本信息失败')
+                        reject(`获取基本信息失败\n\n${res}`);
                     }
                 },
                 error: err => {
-                    console.log(err);
-                    reject('获取基本信息失败')
+                    reject(`获取基本信息失败\n\n${err}`)
                 }
             })
         });
@@ -165,10 +159,10 @@ const API = {
         return new Promise((resolve, reject) => {
             HttpRequest({
                 type: 'POST',
-                _url: YQFK_HOST+'/home/base_info/addBaseInfo',
+                _url: YQFK_HOST + '/home/base_info/addBaseInfo',
                 contents: info,
                 headers: {
-                    Referer: YQFK_HOST+'/main',
+                    Referer: YQFK_HOST + '/main',
                     Origin: YQFK_HOST,
                     'User-Agent': Headers.CHROME,
                     Accept: Headers.JSON,
@@ -185,8 +179,7 @@ const API = {
                     }
                 },
                 error: err => {
-                    console.log(err);
-                    reject('提交失败')
+                    reject(`提交失败\n\n${err}`)
                 }
             })
         });
@@ -219,8 +212,7 @@ const API = {
                     }
                 },
                 error: err => {
-                    console.log(err);
-                    reject('Server酱推送失败')
+                    reject(`Server酱推送失败\n\n${err}`)
                 }
             })
         });
@@ -234,9 +226,8 @@ const fn = {
      */
     filterSendInfo(baseinfo) {
         return new Promise((resolve, reject) => {
-            readFile('Keys.json',(err,data) => {
+            readFile('Keys.json', (err, data) => {
                 if (err) {
-                    console.log(err);
                     reject('打开文件失败');
                 } else {
                     let sendinfo = {};
@@ -250,7 +241,7 @@ const fn = {
                                 reject(`缺少键${key}`);
                                 return;
                             }
-                        } else if(value instanceof Array && value.length === 0){
+                        } else if (value instanceof Array && value.length === 0) {
                             sendinfo[key] = null;
                         } else {
                             sendinfo[key] = value;
@@ -268,7 +259,7 @@ const fn = {
      */
     toMarkDown(text) {
         console.log(text);
-        return text+'\n\n'
+        return text + '\n\n'
     }
 };
 (() => {
@@ -278,13 +269,13 @@ const fn = {
     API.initSignIn()
         .then(data => {
             desp += md(data);
-            desp += md(`成功获取到Cookie:\n\n\`${Cookie.replace(/./g,'*')}\``);
-            desp += md(`成功获取到token:\n\n\`${__token__.replace(/./g,'*')}\``);
+            desp += md(`成功获取到Cookie:\n\n\`${Cookie.replace(/./g, '*')}\``);
+            desp += md(`成功获取到token:\n\n\`${__token__.replace(/./g, '*')}\``);
             return API.getLink(USERNAME, PASSWORD);
         })
         .then(data => {
             desp += md('登陆成功');
-            desp += md(`成功获取到跳转链接:\n\n\`${data.replace(/./g,'*')}\``);
+            desp += md(`成功获取到跳转链接:\n\n\`${data.replace(/./g, '*')}\``);
             return API.setAuthorization(data);
         })
         .then(data => {
@@ -306,11 +297,14 @@ const fn = {
             desp += md(data)
             return Promise.resolve();
         })
-        .then(()=>{
-            API.sendToMe('健康打卡通知',desp);
+        .then(() => {
+            return API.sendToMe('健康打卡通知', desp);
         })
         .catch(err => {
             desp += fn.toMarkDown(err)
-            API.sendToMe('健康打卡出错',desp);
+            return API.sendToMe('健康打卡出错', desp);
+        })
+        .catch(err => {
+            console.log(err);
         })
 })()
