@@ -236,14 +236,13 @@ const fn = {
      */
     filterSendInfo(baseinfo) {
         return new Promise((resolve, reject) => {
-            readFile('send.json',(err,data) => {
+            readFile('Keys.json',(err,data) => {
                 if (err) {
                     console.log(err);
                     reject('打开文件失败');
                 } else {
                     let sendinfo = {};
-                    const send = JSON.parse(data)
-                        , keys = Object.keys(send);
+                    const keys = JSON.parse(data);
                     keys.forEach(key => {
                         const value = baseinfo[key];
                         if (typeof value === 'undefined') {
@@ -281,13 +280,13 @@ const fn = {
     API.initSignIn()
         .then(data => {
             desp += md(data);
-            desp += md(`成功获取到Cookie:\n\n${Cookie.replace(/./g,'*')}`);
-            desp += md(`成功获取到token:\n\n${__token__.replace(/./g,'*')}`);
+            desp += md(`成功获取到Cookie:\n\n${Cookie.replace(/./g,'\*')}`);
+            desp += md(`成功获取到token:\n\n${__token__.replace(/./g,'\*')}`);
             return API.getLink(USERNAME, PASSWORD);
         })
         .then(data => {
             desp += md('登陆成功');
-            desp += md(`成功获取到跳转链接:\n\n${data.replace(/./g,'*')}`);
+            desp += md(`成功获取到跳转链接:\n\n${data.replace(/./g,'\*')}`);
             return API.setAuthorization(data);
         })
         .then(data => {
@@ -306,12 +305,13 @@ const fn = {
         })
         .then(data => {
             desp += md(data)
+            return Promise.resolve();
+        })
+        .then(()=>{
+            API.sendToMe('健康打卡通知',desp);
         })
         .catch(err => {
             desp += fn.toMarkDown(err)
             API.sendToMe('健康打卡出错',desp);
-        })
-        .finally(()=>{
-            API.sendToMe('健康打卡通知',desp);
         })
 })()
