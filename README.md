@@ -18,7 +18,7 @@
 
 这是个文件，内含打赏二维码，扫红包二维码领取，使用支付宝支付0.01即可，谢谢支持~~~
 
-链接：https://share.weiyun.com/C8Av7vpu 密码：rsxv3d
+链接: https://share.weiyun.com/C8Av7vpu 密码：rsxv3d
 
 链接: https://pan.baidu.com/s/1FRJrpWQnawXjPE3kb8KH9Q 提取码:l8p9
 
