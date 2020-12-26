@@ -5,6 +5,6 @@
 Server酱回复
 开源。
 感谢作者：
-![image](https://github.com/mimiranda0111/covidqqqq/blob/main/Image/secret.jpg)
-![image](https://github.com/mimiranda0111/covidqqqq/blob/main/Image/hb.jpg)
-![image](https://github.com/mimiranda0111/covidqqqq/blob/main/Image/zfb.jpg)
+![image](Image/secret.jpg)
+![image](Image/hb.jpg)
+![image](Image/zfb.jpg)
